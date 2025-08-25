@@ -1,0 +1,16 @@
+button {
+	min-width: 24px;
+	border-radius: 0;
+	border: 1px outset gray;
+	font-family: sans-serif;
+	font-size: 11pt;
+}
+
+.serif {
+	font-family: serif;
+}
+
+.styler {
+	display: flex;
+	flex-wrap: wrap;
+}

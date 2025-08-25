@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2digit test</title>
+	<link href="static/style.css" rel="stylesheet" />
+	
+</head>
+<body>
+
+<div>
+{% for post in posts %}
+	<div>
+		<div>{{post.format_time()}}</div>
+		<div>{{post.username}}</div>
+		<div>{{post.number}}</div>
+		<div>{{post.content}}</div>
+		<button onclick="deletePost({{post.id}})">Delete</button>
+	</div>
+{% endfor %}
+</div>
+
+<div>
+	<textarea id="postInput" spellcheck="false"></textarea>
+	<button onclick="submitPost()">Post</button>
+	<div id="results"></div>
+</div>
+
+<script src="static/script.js"></script>
+
+</body>
+</html>
