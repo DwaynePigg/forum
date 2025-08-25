@@ -47,6 +47,9 @@ function insertTag(tagName, param) {
 		}
 		updatePost();
 	}
+	if (event.type == 'click') {
+		editor.focus();
+	}
 }
 
 function autoCloseTag() {

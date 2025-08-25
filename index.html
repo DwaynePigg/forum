@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2digit.org: Post Editor</title>
+<title>BBCode Tester</title>
 <link href="style.css" rel="stylesheet" />
+<link href="bbcode.css" rel="stylesheet" />
 </head>
 <body>
 
@@ -49,6 +50,9 @@
 		style="font-size: 12pt;">i</span><span 
 		style="font-size: 10pt;">z</span><span 
 		style="font-size: 8pt;" >e</span>
+	</button>
+	<button onclick="insertTag('highlight', 'yellow')" title="Highlight" class="hidemobile">
+	<span style="background-color: yellow;">hi</span>
 	</button>
 </div>
 <textarea cols="80" rows="8" id="editor" oninput="updatePost(event)" onkeydown="shortcut(event)" spellcheck="false"></textarea>

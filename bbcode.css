@@ -1,0 +1,21 @@
+pre {
+	margin: 0;
+	white-space: pre-wrap;
+	
+    background-color: black;
+	
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+	color: white;
+	font-size: 10pt;
+	
+	padding: 2px;
+	overflow: auto;
+}
+
+blockquote {
+    border: 1px solid lightgray;
+	border-left: 8px solid lightgray;
+	padding: 2px;
+}

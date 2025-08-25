@@ -14,3 +14,8 @@ button {
 	display: flex;
 	flex-wrap: wrap;
 }
+
+#preview {
+	white-space: pre-wrap;
+	width: 400px;
+}

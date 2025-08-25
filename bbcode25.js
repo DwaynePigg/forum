@@ -10,8 +10,22 @@ function htmlEscape(content) {
 	return content.replaceAll(/[<>]|&(?![a-z0-9]+;)/g, c => ENTITIES[c]);
 }
 
-function trimNewline(content) {
-	return content.replace(/^\r?\n/, '');
+function trimLeadingNewline(s) {
+	if (s.startsWith('\r\n')) {
+		return s.slice(2);
+	}
+	if (s.startsWith('\n')) {
+		return s.slice(1);
+	}
+	return s;
+}
+
+function endsWithNewline(s) {
+	return s.endsWith('\n') || s.endsWith('\r\n');
+}
+
+function startsWithNewline(s) {
+	return s.startsWith('\n') || s.startsWith('\r\n');
 }
 
 const NEXT_TAG = /\[(\/?)([a-z]+)(?:=([^\]\s]+))?\]/i;
@@ -33,34 +47,34 @@ function parseInner(content, openTag, unclosed) {
 	let match = NEXT_TAG.exec(content);
 	if (match) {
 		let [full, isEndTag, tagName, param] = match;
-		let left = content.substring(0, match.index);
-		let right = content.substring(match.index + full.length);
+		let before = content.substring(0, match.index);
+		let after = content.substring(match.index + full.length);
 		let tag = TAG_LOOKUP[tagName.toLowerCase()];
 		if (tag) {
 			if (isEndTag) {
 				if (tag === openTag) {
-					return [left, right];
+					return [before, after];
 				}
 			} else {
 				let inner, outer, remainder;
-				[inner, remainder] = tag.parse(right, tag, unclosed);
+				[inner, remainder] = tag.parse(after, tag, unclosed);
 				[outer, remainder] = parseInner(remainder, openTag, unclosed);
-				return [tag.formatOuter(left, inner, outer, param), remainder];
+				let blockMode = startsWithNewline(inner)
+				if (blockMode) {
+					inner = trimLeadingNewline(inner);
+					outer = trimLeadingNewline(outer);
+				}
+				return [before + tag.format(inner, param, blockMode) + outer, remainder];
 			}
 		}
-		let [inner, remainder] = parseInner(right, openTag, unclosed);
-		// `<span class="error">${full}</span>`
-		// TODO: if we're not going to do anything here, we should skip non-matching tags
-		// (which is basically what we're doing, but we could do it non-recursively)
-		return [left + full + inner, remainder];
+		let [inner, remainder] = parseInner(after, openTag, unclosed);
+		return [before + full + inner, remainder];
 	}
 	if (openTag) {
-		// content += `<span class="missing">[/${openTag.name}]</span>`
 		unclosed.push(openTag.name);
 	}
 	return [content, ''];
 }
-
 
 const TAG_LOOKUP = function() {
 	let tags = [
@@ -70,19 +84,21 @@ const TAG_LOOKUP = function() {
 		new StyleTag('s'),
 		new StyleTag('sup'),
 		new StyleTag('sub'),
+		
 		new AlignTag('left'),
 		new AlignTag('right'),
 		new AlignTag('center'),
 		new AlignTag('justify'),
-		new BasicTag('color', applyColor),
-		new BasicTag('font',  applyFont),
-		new BasicTag('url',   applyUrl),
-		new BasicTag('img',   applyImg),
-		new BlockTag('quote', applyQuote),
-		new BlockTag('list',  applyList),
-		new BlockTag('code',  applyCode, parseCode),
-		new      Tag('size',  undefined, applySize),
-		// we're doing all this OO stuff just because we want special handling for font-size!
+		
+		new Tag('quote', applyQuote),
+		new Tag('list', applyList),
+		new Tag('code', applyCode, parseCode),
+		new Tag('color', applyColor),
+		new Tag('font', applyFont),
+		new Tag('url', applyUrl),
+		new Tag('img', applyImg),
+		new Tag('size', applySize),
+		new Tag('highlight', applyHighlight),
 	];
 
 	let lookup = {};
@@ -92,38 +108,20 @@ const TAG_LOOKUP = function() {
 	return lookup;
 }();
 
-function formatOuter(before, content, after, param) {
-	return before + this.format(content, param) + after;
-}
-
-function formatOuterBlock(before, content, after, param) {
-	return formatOuter.call(this, before, trimNewline(content), trimNewline(after), param);
-}
-
-function Tag(name, parser=parseInner, outerFormatter=formatOuter) {
+function Tag(name, formatter, parser=parseInner) {
 	this.name = name;
+	this.format = formatter;
 	this.parse = parser;
-	this.formatOuter = outerFormatter;
-}
-
-function BasicTag(name, formatter) {
-	Tag.call(this, name);
-	this.format = formatter;
-}
-
-function BlockTag(name, formatter, parser) {
-	Tag.call(this, name, parser, formatOuterBlock);
-	this.format = formatter;
 }
 
 function StyleTag(name) {
-	BasicTag.call(this, name, function(content) {
+	Tag.call(this, name, function(content) {
 		return `<${name}>${content}</${name}>`
 	});
 }
 
 function AlignTag(align) {
-	BlockTag.call(this, align, function(content) {
+	Tag.call(this, align, function(content) {
 		return `<div style="text-align: ${align};">${content}</div>`	
 	});
 }
@@ -134,8 +132,14 @@ function applyFont(content, param) {
 }
 
 function applyColor(content, param) {
-	param ??= 'black';
+	param ??= 'red';
 	return `<span style="color: ${param};">${content}</span>`;
+}
+
+function applyHighlight(content, param, blockMode) {
+	param ??= 'yellow';
+	let tagName = blockMode ? 'div' : 'span';
+	return `<${tagName} style="background-color: ${param};">${content}</${tagName}>`;
 }
 
 function getSizePt(param) {
@@ -159,16 +163,9 @@ function getSizePt(param) {
  * around this (although quirks mode does exactly what I want), so we'll just
  * make any [font] blocks into divs if they contain newlines.
  */
-function applySize(before, content, after, param) {
-	let tagName;
-	if (content.includes('\n')) {
-		tagName = 'div';
-		content = trimNewline(content)
-		after = trimNewline(after);
-	} else {
-		tagName = 'span';
-	}
-	return `${before}<${tagName} style="font-size: ${getSizePt(param)}pt;">${content}</${tagName}>${after}`;
+function applySize(content, param, blockMode) {
+	let tagName = blockMode ? 'div' : 'span';
+	return `<${tagName} style="font-size: ${getSizePt(param)}pt;">${content}</${tagName}>`;
 }
 
 function applyUrl(content, param) {
