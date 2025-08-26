@@ -19,3 +19,11 @@ button {
 	white-space: pre-wrap;
 	width: 400px;
 }
+
+ol, ul {
+	white-space: normal;
+}
+
+li {
+	white-space: pre-wrap;
+}

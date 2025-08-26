@@ -9,54 +9,78 @@ function updatePost() {
 	preview.innerHTML = parsed.html;
 }
 
-function noSelection() {
-	return editor.selectionStart == editor.selectionEnd;
+function selectedText() {
+	return editor.value.slice(editor.selectionStart, editor.selectionEnd);
 }
 
-function writeText(text, selected=false) {
+function writeText(text) {
 	let start = editor.selectionStart;
 	editor.setRangeText(text);
-	if (selected) {	
-		editor.setSelectionRange(start, start + text.length);
-	} else {
-		let pos = start + text.length;
-		editor.setSelectionRange(pos, pos);
-	}
-	updatePost();
-	editor.focus();
+	let pos = start + text.length;
+	editor.setSelectionRange(pos, pos);
 }
 
 function currentUnclosed() {
-	return parseBBCode(editor.value.substring(0, editor.selectionStart)).unclosed[0];
+	return parseBBCode(editor.value.slice(0, editor.selectionStart)).unclosed[0];
 }
 
 const OPEN_TAG = /^\[([a-z]+)(?:=[^\]\s]+)?\]/i;
 
 function insertTag(tagName, param) {
-	let open = param ? `[${tagName}=${param}]` : `[${tagName}]`;
+	let open = param == undefined ? `[${tagName}]` : `[${tagName}=${param}]`;
 	let close = `[/${tagName}]`;
-	if (noSelection()) {
-		writeText(currentUnclosed() == tagName ? close : open);
-	} else {
-		let selected = editor.value.substring(editor.selectionStart, editor.selectionEnd);
+	let selected = selectedText();
+	if (selected) {
 		let match = OPEN_TAG.exec(selected);
 		if (match && match[1] == tagName && selected.endsWith(close)) {
-			editor.setRangeText(selected.substring(match[0].length, selected.length - close.length));
+			editor.setRangeText(selected.slice(match[0].length, -close.length));
 		} else {
 			editor.setRangeText(open + selected + close);
 		}
-		updatePost();
+	} else {
+		writeText(currentUnclosed() == tagName ? close : open);
 	}
+	updatePost();
+	if (event.type == 'click') {
+		editor.focus();
+	}
+}
+
+function insertList(param) {
+	let listTag = param == undefined ? '[list]' : `[list=${param}]`;
+	let selected = selectedText();
+	let listItems;
+	if (selected) {
+		let match = OPEN_TAG.exec(selected);
+		if (match && match[1] == 'list' && selected.endsWith('[/list]')) {
+			editor.setRangeText(selected
+				.slice(match[0].length, -7)
+				.split(/\r?\n/)
+				.map(line => line.startsWith('[li]') && line.endsWith('[/li]') ? line.slice(4, -5) : line)
+				.filter(x => x.trim())
+				.join('\r\n'));
+		} else {			
+			editor.setRangeText(`${listTag}\r\n${selected
+				.split(/\r?\n/)
+				.filter(x => x.trim())
+				.map(line => `[li]${line}[/li]`)
+				.join('\r\n')}\r\n[/list]`);
+		}
+	} else {
+		writeText(`${listTag}\r\n[li]Lions[/li]\r\n[li]Tigers[/li]\r\n[li]Bears[/li]\r\n[/list]`);
+	}
+	updatePost();
 	if (event.type == 'click') {
 		editor.focus();
 	}
 }
 
 function autoCloseTag() {
-	if (noSelection()) {
+	if (!selectedText()) {
 		let unclosed = currentUnclosed();
 		if (unclosed) {
 			writeText(`[/${unclosed}]`);
+			updatePost();
 		}
 	}
 }
@@ -71,32 +95,36 @@ function shortcut(e) {
 	let key = e.key.toLowerCase();
 	if (e.shiftKey) {
 		switch (key) {
-			case '+': insertTag('sup'); break;
-			case '_': insertTag('sub'); break;
 			case 'i': insertTag('img'); break;
 			case 'u': insertTag('url'); break;
 			case '|': insertTag('justify'); break;
 			case 'c': insertTag('color', randColor()); break;
 			case 'f': insertTag('font',  randFont());  break;
 			case 's': insertTag('size',  randSize());  break;
+			case 'l': insertList();   break;
+			case '!': insertList(1);   break;
 			default: return;
 		}
 	} else {
 		switch (key) {
-			case ' ': autoCloseTag(); break;
 			case 'b':
 			case 'i':
 			case 'u':
-			case 's':
-			insertTag(key); break;
+			case 's':  insertTag(key);      break;
 			case '[':  insertTag('left');   break;
 			case ']':  insertTag('right');  break;
 			case '\\': insertTag('center'); break;
-			case 'l':  insertTag('list');   break;
 			case 'q':  insertTag('quote');  break;
-			case '.':
+			case '=':  insertTag('sup');    break;
+			case '-':  insertTag('sub');    break;
+			case '`':  insertTag('code');   break;
+			case 'l':  insertTag('list');   break;
+			case '1':  insertTag('list', 1);break;
+			case '.':  insertTag('li');     break;
+			case 'h':  insertTag('highlight', randColor());  break;
+			case ' ':  autoCloseTag(); break;
 			// case 'f': insertFreedomOfSpeech(); break;
-			if (noSelection()) writeText('[*]'); break;
+			// if (noSelection()) writeText('[*]'); break;
 			default: return;
 		}
 	}
@@ -121,9 +149,9 @@ const SIZES =  ['small', 'large'];
 
 function randColor() {
 	if (Math.random() < 0.05) {
-		return '#' + randInt(0, 0x1000000).toString(16).padStart(6, '0');
+		return `#${randInt(0, 0x1000000).toString(16).padStart(6, '0')}`;
 	}
-	return COLORS[randInt(0, COLORS.length)];
+	return randChoice(COLORS);
 }
 
 function randFont() {
@@ -131,11 +159,10 @@ function randFont() {
 }
 
 function randSize() {
-	let i = randInt(0, SIZES.length + 2);
-	if (i < SIZES.length) {
-		return SIZES[i]
+	if (Math.random() < 0.5) {
+		return randInt(6, 60);
 	}
-	return randInt(6, 60);
+	return randChoice(SIZES);
 }
 
 updatePost();

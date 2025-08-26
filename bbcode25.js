@@ -7,7 +7,7 @@ const ENTITIES = {
 };
 
 function htmlEscape(content) {
-	return content.replaceAll(/[<>]|&(?![a-z0-9]+;)/g, c => ENTITIES[c]);
+	return content.replaceAll(/[<>]|&(?!#?[a-z0-9]+;)/gi, c => ENTITIES[c]);
 }
 
 function trimLeadingNewline(s) {
@@ -20,20 +20,17 @@ function trimLeadingNewline(s) {
 	return s;
 }
 
-function endsWithNewline(s) {
-	return s.endsWith('\n') || s.endsWith('\r\n');
-}
-
 function startsWithNewline(s) {
 	return s.startsWith('\n') || s.startsWith('\r\n');
 }
 
 const NEXT_TAG = /\[(\/?)([a-z]+)(?:=([^\]\s]+))?\]/i;
+const ROOT = new Tag('ROOT', (a => a), parseInner);
 
 function parseBBCode(content) {
 	let unclosed = [];
 	return {
-		html: parseInner(htmlEscape(content.trimEnd()), null, unclosed)[0],
+		html: parseInner(htmlEscape(content.trimEnd()), ROOT, unclosed)[0],
 		unclosed: unclosed,
 	};
 }
@@ -47,8 +44,8 @@ function parseInner(content, openTag, unclosed) {
 	let match = NEXT_TAG.exec(content);
 	if (match) {
 		let [full, isEndTag, tagName, param] = match;
-		let before = content.substring(0, match.index);
-		let after = content.substring(match.index + full.length);
+		let before = content.slice(0, match.index);
+		let after = content.slice(match.index + full.length);
 		let tag = TAG_LOOKUP[tagName.toLowerCase()];
 		if (tag) {
 			if (isEndTag) {
@@ -57,8 +54,8 @@ function parseInner(content, openTag, unclosed) {
 				}
 			} else {
 				let inner, outer, remainder;
-				[inner, remainder] = tag.parse(after, tag, unclosed);
-				[outer, remainder] = parseInner(remainder, openTag, unclosed);
+				[inner, remainder] = tag.parse(after, tag, unclosed, param);
+				[outer, remainder] = openTag.parse(remainder, openTag, unclosed);
 				let blockMode = startsWithNewline(inner)
 				if (blockMode) {
 					inner = trimLeadingNewline(inner);
@@ -70,9 +67,19 @@ function parseInner(content, openTag, unclosed) {
 		let [inner, remainder] = parseInner(after, openTag, unclosed);
 		return [before + full + inner, remainder];
 	}
-	if (openTag) {
+	if (openTag != ROOT) {
 		unclosed.push(openTag.name);
 	}
+	return [content, ''];
+}
+
+function parseInnerStrict(content, tagName, unclosed) {
+	let closeTag = `[/${tagName}]`;
+	let match = content.toLowerCase().indexOf(closeTag);
+	if (match != -1) {
+		return [content.slice(0, match), content.slice(match + closeTag.length)];
+	}
+	unclosed.push(tagName);
 	return [content, ''];
 }
 
@@ -90,15 +97,17 @@ const TAG_LOOKUP = function() {
 		new AlignTag('center'),
 		new AlignTag('justify'),
 		
-		new Tag('quote', applyQuote),
-		new Tag('list', applyList),
-		new Tag('code', applyCode, parseCode),
-		new Tag('color', applyColor),
 		new Tag('font', applyFont),
-		new Tag('url', applyUrl),
-		new Tag('img', applyImg),
 		new Tag('size', applySize),
+		new Tag('color', applyColor),
+		new Tag('quote', applyQuote),
+		new Tag('url', applyUrl, parseUrl),
+		new Tag('img', applyImg, parseImg),
+		new Tag('code', applyCode, parseCode),
 		new Tag('highlight', applyHighlight),
+		
+		new Tag('list', applyList),
+		new Tag('li', applyListItem),
 	];
 
 	let lookup = {};
@@ -160,16 +169,25 @@ function getSizePt(param) {
 /*
  * Spans aren't allowed to change line-height, so you can change the font-size
  * but not the space between lines, which looks weird. There's no great way
- * around this (although quirks mode does exactly what I want), so we'll just
- * make any [font] blocks into divs if they contain newlines.
+ * around this (although quirks mode does exactly what I want), so I've 
+ * introduced block mode, where a newline immediately after an open tag makes
+ * certain styles into blocks.
  */
 function applySize(content, param, blockMode) {
 	let tagName = blockMode ? 'div' : 'span';
 	return `<${tagName} style="font-size: ${getSizePt(param)}pt;">${content}</${tagName}>`;
 }
 
+function parseUrl(content, url, unclosed, param) {
+	return param ? parseInner(content, url, unclosed) : parseInnerStrict(content, 'url', unclosed)
+}
+
 function applyUrl(content, param) {
 	return `<a href="${param ?? content}">${content}</a>`;
+}
+
+function parseImg(content, _, unclosed) {
+	return parseInnerStrict(content, 'img', unclosed)
 }
 
 function preprocessImg(content) {
@@ -199,24 +217,19 @@ function applyQuote(content) {
 	return `<blockquote>${content}</blockquote>`;
 }
 
-const LIST_ITEMS = /\[\*\](.*?)(?:$|(?=\[\*\]))/gs
-
 function applyList(content, param) {
-	content = content.trim();
-	let listItems;
-	// okay, lists break a lot of formatting. I see why forum.dominionstrategy uses explicit [li] tags...
-	if (content.includes('[*]')) {
-		listItems = content.replaceAll(LIST_ITEMS, (_, g1) => `<li>${g1.trim()}</li>`);
-	} else {
-		listItems = content.split(/\r?\n/).map(line => line.trim()).filter(x => x).map(line => `<li>${line}</li>`).join('');
-	}
 	if (param) {
-		if (!isNaN(param) && start > 1) {
-			return `<ol type="1" start="${param}">${listItems}</ol>`;
+		let start = parseInt(param);
+		if (!isNaN(start) && start > 1) {
+			return `<ol type="1" start="${param}">${content}</ol>`;
 		}
-		return `<ol type="${param}">${listItems}</ol>`;
+		return `<ol type="${param}">${content}</ol>`;
 	}
-	return `<ul>${listItems}</ul>`;
+	return `<ul>${content}</ul>`;
+}
+
+function applyListItem(content, param) {
+	return `<li>${content}</li>`
 }
 
 function applyCode(content) {
@@ -224,11 +237,5 @@ function applyCode(content) {
 }
 
 function parseCode(content, _, unclosed) {
-	let closeTag = '[/code]';
-	let match = content.indexOf(closeTag);
-	if (match != -1) {
-		return [content.substring(0, match), content.substring(match + closeTag.length)];
-	}
-	unclosed.push('code');
-	return [content, ''];
+	return parseInnerStrict(content, 'code', unclosed)
 }

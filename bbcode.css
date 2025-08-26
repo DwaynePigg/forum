@@ -19,3 +19,8 @@ blockquote {
 	border-left: 8px solid lightgray;
 	padding: 2px;
 }
+
+img {
+	object-fit: contain;
+	image-rendering: pixelated;
+}
