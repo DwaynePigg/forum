@@ -24,7 +24,7 @@ function startsWithNewline(s) {
 	return s.startsWith('\n') || s.startsWith('\r\n');
 }
 
-const NEXT_TAG = /\[(\/?)([a-z]+)(?:=([^\]\s]+))?\]/i;
+const NEXT_TAG = /\[(\/?)([a-z]+)(?:=([^\]]+))?\]/i;
 const ROOT = new Tag('ROOT', (a => a), parseInner);
 
 function parseBBCode(content) {
@@ -136,7 +136,7 @@ function AlignTag(align) {
 }
 
 function applyFont(content, param) {
-	param ??= 'sans-serif';
+	param ??= 'Impact,sans-serif';
 	return `<span style="font-family: ${param};">${content}</span>`;
 }
 
@@ -183,7 +183,11 @@ function parseUrl(content, url, unclosed, param) {
 }
 
 function applyUrl(content, param) {
-	return `<a href="${param ?? content}">${content}</a>`;
+	let href = (param ?? content).trim();
+	if (href.toLowerCase().startsWith('javascript')) {
+		href = "javascript:alert('You have been denied!');";
+	}
+	return `<a href="${href}">${content}</a>`;
 }
 
 function parseImg(content, _, unclosed) {

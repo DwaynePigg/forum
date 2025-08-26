@@ -55,15 +55,15 @@ function insertList(param) {
 		if (match && match[1] == 'list' && selected.endsWith('[/list]')) {
 			editor.setRangeText(selected
 				.slice(match[0].length, -7)
+				.trim()
 				.split(/\r?\n/)
 				.map(line => line.startsWith('[li]') && line.endsWith('[/li]') ? line.slice(4, -5) : line)
-				.filter(x => x.trim())
 				.join('\r\n'));
 		} else {			
 			editor.setRangeText(`${listTag}\r\n${selected
+				.trim()
 				.split(/\r?\n/)
-				.filter(x => x.trim())
-				.map(line => `[li]${line}[/li]`)
+				.map(line => line.trim() ? `[li]${line}[/li]` : line)
 				.join('\r\n')}\r\n[/list]`);
 		}
 	} else {
