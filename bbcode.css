@@ -14,6 +14,16 @@ pre {
 	overflow: auto;
 }
 
+ul, ol {
+	margin: 0;
+	padding-left: 2em;
+	white-space: normal;
+}
+
+li {
+	white-space: pre-wrap;
+}
+
 blockquote {
     border: 1px solid lightgray;
 	border-left: 8px solid lightgray;

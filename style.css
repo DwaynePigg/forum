@@ -20,10 +20,11 @@ button {
 	width: 400px;
 }
 
-ol, ul {
-	white-space: normal;
-}
-
-li {
-	white-space: pre-wrap;
+@media (max-device-width: 480px) {
+	.post .header {
+		border-radius: 0;
+	}
+	.hidemobile {
+		display: none;
+	}
 }

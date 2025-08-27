@@ -186,6 +186,8 @@ function applyUrl(content, param) {
 	let href = (param ?? content).trim();
 	if (href.toLowerCase().startsWith('javascript')) {
 		href = "javascript:alert('You have been denied!');";
+		// Maybe don't even do this, just clean it up server-side?
+		// Okay, this doesn't even stop all the tricks
 	}
 	return `<a href="${href}">${content}</a>`;
 }

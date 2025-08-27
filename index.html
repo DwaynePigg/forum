@@ -13,13 +13,33 @@
 	<button onclick="insertTag('b')" title="Bold (Ctrl+B)" class="serif"><b>B</b></button>
 	<button onclick="insertTag('i')" title="Italics (Ctrl+I)" class="serif"><i>I</i></button>
 	<button onclick="insertTag('u')" title="Underline (Ctrl+U)" class="serif"><u>U</u></button>
-	<button onclick="insertTag('s')" title="Strikethrough (Ctrl+S)" class="serif"><s>S</s></button>
-	<button onclick="insertTag('url')" title="Hyperlink (Ctrl + Shift + U)" style="color: blue; text-decoration: underline;">url</button>
-	<button onclick="insertTag('img')" title="Image (Ctrl + Shift + I)">🖼️</button>
-	<button onclick="insertTag('sup')" title="Superscript (Ctrl + -)" class="hidemobile">x<sup>2</sup></button>
-	<button onclick="insertTag('sub')" title="Subscript (Ctrl + =)"   class="hidemobile">O<sub>2</sub></button>
+	<button onclick="insertTag('s')" title="Strikethrough (Ctrl+S)" class="serif hidemobile"><s>S</s></button>
+	<button onclick="insertTag('url')" title="Hyperlink (Ctrl + Shift + U)" style="color: blue; text-decoration: underline;">link</button>
+	<button onclick="insertTag('img')" title="Image (Ctrl + Shift + I)"><img src="image.png"></button>
+	<button onclick="insertTag('color', 'red')" title="Change Color (Ctrl + Shift + C)" style="font-weight: bold; font-size: 10pt;"><span 
+		style="color: red;"   >c</span><span 
+		style="color: orange;">o</span><span 
+		style="color: green;" >l</color><span 
+		style="color: blue;"  >o</span><span 
+		style="color: purple;">r</span>
+	</button>
+	<button onclick="insertTag('font', 'cursive')" title="Change Font (Ctrl + Shift + F)" class="hidemobile"><span 
+		style="font-family: Arial, sans-serif;"     >f</span><span 
+		style="font-family: Courier New, monospace" >o</span><span 
+		style="font-family: Comic Sans MS, cursive;">n</span><span 
+		style="font-family: Georgia, serif;"        >t</span>
+	</button>
+	<button onclick="insertTag('size', '16')" title="Change Size (Ctrl + Shift + S)"><span 
+		style="font-size: 14pt;">s</span><span 
+		style="font-size: 12pt;">i</span><span 
+		style="font-size: 10pt;">z</span><span 
+		style="font-size: 8pt;" >e</span>
+	</button>
+	<button onclick="insertTag('highlight', 'yellow')" title="Highlight (Ctrl + H)">
+	<span style="background-color: yellow; font-size: 10pt">451</span>
+	</button>
 	<button onclick="insertTag('center')" title="Center (Ctrl + \)" style="padding: 2px;">
-		<div style="border-bottom: 1px solid black; text-align: center; font-size: 8pt; width: 24px;">A</div>
+		<div style="text-align: center; font-size: 6px; width: 16px; line-height: 6px;"><span style="font-family: monospace; font-weight: bold;">The quick brown fox</span></div>
 	</button>
 	<button onclick="insertTag('quote')" title="Block Quote (Ctrl + Q)" class="hidemobile">
 		<blockquote style="font-size: 13pt; margin: 0; border-color: gray;">“ ”</blockquote>
@@ -27,35 +47,20 @@
 	<button onclick="insertTag('code')" title="Unformatted (Ctrl + `)" style="font-family: monospace;" class="hidemobile">
 		<pre>[?]</pre>
 	</button>
-	<button onclick="insertList()" title="Bulleted List (Ctrl + L)" class="hidemobile" style="font-size:8pt; text-align: left;">
-		<ul style="padding-left: 14px; margin: 0;">
+	<button onclick="insertList()" title="Bulleted List (Ctrl + L)" style="font-size:8pt;">
+		<ul style="padding-left: 10px; margin: 0;">
 			<li>―</li>
 			<li>―</li>
 		</ul>
 	</button>
-	<button onclick="insertList(1)" title="Numbered List (Ctrl + 1)" class="hidemobile" style="font-size: 8pt; text-align: left;">
-		<ol style="padding-left: 14px; margin: 0;">
+	<button onclick="insertList(1)" title="Numbered List (Ctrl + 1)" class="hidemobile" style="font-size: 8pt;">
+		<ol style="padding-left: 10px; margin: 0;">
 			<li>―</li>
 			<li>―</li>
 		</ol>
 	</button>
-	<button onclick="insertTag('color', 'red')" title="Change Color (Ctrl + Shift + C)"><span 
-		style="color: red;"   >c</span><span 
-		style="color: orange;">o</span><span 
-		style="color: green;" >l</color><span 
-		style="color: blue;"  >o</span><span 
-		style="color: purple;">r</span>
-	</button>
-	<button onclick="insertTag('font', 'cursive')" title="Change Font (Ctrl + Shift + F)" style="font-family: Impact;" class="hidemobile">font</button>
-	<button onclick="insertTag('size', '16')" title="Change Size (Ctrl + Shift + S)"><span 
-		style="font-size: 14pt;">s</span><span 
-		style="font-size: 12pt;">i</span><span 
-		style="font-size: 10pt;">z</span><span 
-		style="font-size: 8pt;" >e</span>
-	</button>
-	<button onclick="insertTag('highlight', 'yellow')" title="Highlight (Ctrl + H)" class="hidemobile">
-	<span style="background-color: yellow;">hi</span>
-	</button>
+	<button onclick="insertTag('sup')" title="Superscript (Ctrl + -)" class="hidemobile" style="font-size: 8pt;">x<sup>2</sup></button>
+	<button onclick="insertTag('sub')" title="Subscript (Ctrl + =)"   class="hidemobile" style="font-size: 8pt;">O<sub>2</sub></button>
 </div>
 <textarea cols="80" rows="8" id="editor" oninput="updatePost(event)" onkeydown="shortcut(event)" spellcheck="false"></textarea>
 <div id="preview"></div>
