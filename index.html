@@ -10,10 +10,10 @@
 <body>
 
 <div class="styler">
-	<button onclick="insertTag('b')" title="Bold (Ctrl+B)" class="serif"><b>B</b></button>
-	<button onclick="insertTag('i')" title="Italics (Ctrl+I)" class="serif"><i>I</i></button>
-	<button onclick="insertTag('u')" title="Underline (Ctrl+U)" class="serif"><u>U</u></button>
-	<button onclick="insertTag('s')" title="Strikethrough (Ctrl+S)" class="serif hidemobile"><s>S</s></button>
+	<button onclick="insertTag('b')" title="Bold (Ctrl+B)" style="font-family: serif;"><b>B</b></button>
+	<button onclick="insertTag('i')" title="Italics (Ctrl+I)" style="font-family: serif;"><i>I</i></button>
+	<button onclick="insertTag('u')" title="Underline (Ctrl+U)" style="font-family: serif;"><u>U</u></button>
+	<button onclick="insertTag('s')" title="Strikethrough (Ctrl+S)" style="font-family: serif;"><s>S</s></button>
 	<button onclick="insertTag('url')" title="Hyperlink (Ctrl + Shift + U)" style="color: blue; text-decoration: underline;">link</button>
 	<button onclick="insertTag('img')" title="Image (Ctrl + Shift + I)"><img src="image.png"></button>
 	<button onclick="insertTag('color', 'red')" title="Change Color (Ctrl + Shift + C)" style="font-weight: bold; font-size: 10pt;"><span 
@@ -23,7 +23,7 @@
 		style="color: blue;"  >o</span><span 
 		style="color: purple;">r</span>
 	</button>
-	<button onclick="insertTag('font', 'cursive')" title="Change Font (Ctrl + Shift + F)" class="hidemobile"><span 
+	<button onclick="insertTag('font', 'cursive')" title="Change Font (Ctrl + Shift + F)"><span 
 		style="font-family: Arial, sans-serif;"     >f</span><span 
 		style="font-family: Courier New, monospace" >o</span><span 
 		style="font-family: Comic Sans MS, cursive;">n</span><span 
@@ -41,10 +41,10 @@
 	<button onclick="insertTag('center')" title="Center (Ctrl + \)" style="padding: 2px;">
 		<div style="text-align: center; font-size: 6px; width: 16px; line-height: 6px;"><span style="font-family: monospace; font-weight: bold;">The quick brown fox</span></div>
 	</button>
-	<button onclick="insertTag('quote')" title="Block Quote (Ctrl + Q)" class="hidemobile">
+	<button onclick="insertTag('quote')" title="Block Quote (Ctrl + Q)">
 		<blockquote style="font-size: 13pt; margin: 0; border-color: gray;">“ ”</blockquote>
 	</button>
-	<button onclick="insertTag('code')" title="Unformatted (Ctrl + `)" style="font-family: monospace;" class="hidemobile">
+	<button onclick="insertTag('code')" title="Unformatted (Ctrl + `)" style="font-family: monospace;">
 		<pre>[?]</pre>
 	</button>
 	<button onclick="insertList()" title="Bulleted List (Ctrl + L)" style="font-size:8pt;">
@@ -53,14 +53,14 @@
 			<li>―</li>
 		</ul>
 	</button>
-	<button onclick="insertList(1)" title="Numbered List (Ctrl + 1)" class="hidemobile" style="font-size: 8pt;">
+	<button onclick="insertList(1)" title="Numbered List (Ctrl + 1)" style="font-size: 8pt;">
 		<ol style="padding-left: 10px; margin: 0;">
 			<li>―</li>
 			<li>―</li>
 		</ol>
 	</button>
-	<button onclick="insertTag('sup')" title="Superscript (Ctrl + -)" class="hidemobile" style="font-size: 8pt;">x<sup>2</sup></button>
-	<button onclick="insertTag('sub')" title="Subscript (Ctrl + =)"   class="hidemobile" style="font-size: 8pt;">O<sub>2</sub></button>
+	<button onclick="insertTag('sup')" title="Superscript (Ctrl + -)" style="font-size: 8pt;">x<sup>2</sup></button>
+	<button onclick="insertTag('sub')" title="Subscript (Ctrl + =)"   style="font-size: 8pt;">O<sub>2</sub></button>
 </div>
 <textarea cols="80" rows="8" id="editor" oninput="updatePost(event)" onkeydown="shortcut(event)" spellcheck="false"></textarea>
 <div id="preview"></div>
