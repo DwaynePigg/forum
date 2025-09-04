@@ -7,6 +7,7 @@ function updatePost() {
 	let parsed = parseBBCode(editor.value);
 	let html = parsed.html;
 	preview.innerHTML = parsed.html;
+	preview.hidden = !preview.innerText.trim();
 }
 
 function selectedText() {
