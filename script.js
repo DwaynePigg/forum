@@ -8,7 +8,7 @@ function updatePost() {
 	let parsed = parseBBCode(editor.value);
 	let html = parsed.html;
 	preview.innerHTML = parsed.html;
-	preview.hidden = !preview.innerText.trim();
+	preview.hidden = !preview.innerText.trim() && !preview.getElementsByTagName('img').length;
 	if (parsed.unclosed.length) {
 		let tags = parsed.unclosed.map(t => `<span>${t}</span>`).join(' ');
 		unclosed.innerHTML = `<p>Unclosed tags: ${tags}</p><p>(Use Tab to auto-close.)</p>`;
